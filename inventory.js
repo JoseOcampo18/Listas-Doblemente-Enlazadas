@@ -7,35 +7,31 @@ export default class Inventory{
     add(product){
         if (this._start == null){
             this._start = product;
+            return this._start;
         }
 
         else if(this.search(product._getCode()) == null){
             let aux = this._start;
-            
-            while(aux != null){
-                
-                if(this._start._getCode() > product._getCode()){
+                            
+                if(product._getCode() < this._start._getCode()){
                     product._setNext(this._start);
                     this._start._setPrevious(product);
                     this._start = product;
+                    return product;
                 }
 
-                else if(aux._getCode() > product._getCode()){
-                    product._setNext(aux);
-                    product._setPrevious(aux._getPrevious());
-                    aux._setPrevious(product);
+                else if(this._findPosition(product._getCode())._getCode() < product._getCode()){
+                    product._setPrevious(this._findPosition(product._getCode()));
+                    this._findPosition(product._getCode())._setNext(product);
+                    return product;
+                }
+
+                else {
+                    product._setNext(this._findPosition(product._getCode()));
+                    product._setPrevious(this._findPosition(product._getCode())._getPrevious());
+                    this._findPosition(product._getCode())._setPrevious(product);
                     product._getPrevious()._setNext(product);
                 }
-
-                else if(aux._getCode() < product._getCode()){
-                    aux._setNext(product);
-                    product._setPrevious(aux);
-                }
-
-                else{
-                    aux = aux._getNext();
-                }
-            }
         }
         
         else{
@@ -44,27 +40,53 @@ export default class Inventory{
     }
 
     delete(code){
-        let del = null;
-
-        if(code == this._start._getCode()){
-            del = this._start;
-            this._start = this._start._getNext();
-            del._setNext(null);
-            return del;
+        if (this._start == null) {
+            return null;
         }
 
-        let aux = this._start;
-        while(aux._getNext() != null){
-            if(aux._getNext()._getCode() == code){
-                del = aux._getNext();
-                aux._setNext(aux._getNext()._getNext());
+        else{
+            let del = null;
+            if (code == this._start._getCode()){
+                if (this._start._getNext() != null){
+                del = this._start;
+                this._start = this._start._getNext();
+                this._start._setPrevious(null);
                 del._setNext(null);
+                del._setPrevious(null);
+                return del;
+                }
+                else{
+                del = this._start;
+                this._start = null;
+                return del;
+                }
+            }
+
+            else if(this.search(code)._getNext() == null){
+                let aux = this.search(code);
+                del = aux;
+                aux._getPrevious()._setNext(null);
+                del._setNext(null);
+                del._setPrevious(null);
                 return del;
             }
+
             else{
-                aux = aux._getNext();
+                let aux = this._start;
+                while (aux != null) {
+                    if (aux._getCode() == code){
+                        del = aux;
+                        aux._getPrevious()._setNext(aux._getNext())
+                        aux._getNext()._setPrevious(aux._getPrevious());
+                        del._setNext(null);
+                        del._setPrevious(null);
+                        return del;
+                    }else{
+                        aux = aux._getNext();
+                        }
+                }
+                return del;
             }
-            return null;
         }
     }
 
@@ -86,16 +108,25 @@ export default class Inventory{
     }
 
     invertList(){
-        let aux = null;
-        let aux2 = null;
+        let aux = this._start;
 
-        while(this._start != null){
-            aux2 = this._start._getNext();
-            this._start._setNext(aux);
-            aux = this._start;
-            this._start = aux2;
+        while(aux._getNext() != null){
+            aux = aux._getNext();
         }
 
         return this._start = aux;
+    }
+
+    _findPosition(code){
+        let aux = this._start;
+        while (aux != null) {
+            if (code < aux._getCode()) {
+                return aux;
+            }else if(aux._getNext() != null){
+                aux = aux._getNext();
+            }else{
+                return aux;
+            }
+        }
     }
 }
